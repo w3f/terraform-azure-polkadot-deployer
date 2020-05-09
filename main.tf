@@ -1,13 +1,13 @@
-resource "azurerm_resource_group" "polkadot-{{ clusterName }}" {
-  name     = "polkadot-{{ clusterName }}"
+resource "azurerm_resource_group" "polkadot-aks" {
+  name     = "polkadot-${var.cluster_name}"
   location = var.location
 }
 
-resource "azurerm_kubernetes_cluster" "polkadot-{{ clusterName }}" {
+resource "azurerm_kubernetes_cluster" "polkadot-aks" {
   name                = var.cluster_name
-  location            = "${azurerm_resource_group.polkadot-{{ clusterName }}.location}"
-  resource_group_name = "${azurerm_resource_group.polkadot-{{ clusterName }}.name}"
-  dns_prefix          = "polkadot-{{ clusterName }}"
+  location            = azurerm_resource_group.polkadot-aks.location
+  resource_group_name = azurerm_resource_group.polkadot-aks.name
+  dns_prefix          = "polkadot-${var.cluster_name}"
   kubernetes_version  = var.k8s_version
 
   network_profile {
@@ -31,32 +31,32 @@ resource "azurerm_kubernetes_cluster" "polkadot-{{ clusterName }}" {
   enable_pod_security_policy = false
 }
 
-resource "azurerm_virtual_network" "polkadot-{{ clusterName }}" {
-  name                = "polkadot-{{ clusterName }}"
+resource "azurerm_virtual_network" "polkadot-aks" {
+  name                = "polkadot-${var.cluster_name}"
   address_space       = ["10.0.0.0/16"]
-  location            = "${azurerm_resource_group.polkadot-{{ clusterName }}.location}"
-  resource_group_name = "${azurerm_resource_group.polkadot-{{ clusterName }}.name}"
+  location            = azurerm_resource_group.polkadot-aks.location
+  resource_group_name = azurerm_resource_group.polkadot-aks.name
 }
 
-resource "azurerm_subnet" "polkadot-{{ clusterName }}" {
-  name                      = "polkadot-{{ clusterName }}"
-  resource_group_name       = "${azurerm_resource_group.polkadot-{{ clusterName }}.name}"
-  virtual_network_name      = "${azurerm_virtual_network.polkadot-{{ clusterName }}.name}"
+resource "azurerm_subnet" "polkadot-aks" {
+  name                      = "polkadot-${var.cluster_name}"
+  resource_group_name       = azurerm_resource_group.polkadot-aks.name
+  virtual_network_name      = azurerm_virtual_network.polkadot-aks.name
   address_prefix            = "10.0.1.0/24"
 }
 
-resource "azurerm_public_ip" "polkadot-{{ clusterName }}" {
-  name                = "polkadot-{{ clusterName }}"
-  location            = "${azurerm_resource_group.polkadot-{{ clusterName }}.location}"
-  resource_group_name = "${azurerm_resource_group.polkadot-{{ clusterName }}.name}"
+resource "azurerm_public_ip" "polkadot-aks" {
+  name                = "polkadot-${var.cluster_name}"
+  location            = azurerm_resource_group.polkadot-aks.location
+  resource_group_name = azurerm_resource_group.polkadot-aks.name
   allocation_method   = "Static"
   sku                 = "Standard"
 }
 
-resource "azurerm_network_security_group" "polkadot-{{ clusterName }}" {
-  name                = "polkadot-{{ clusterName }}"
-  location            = "${azurerm_resource_group.polkadot-{{ clusterName }}.location}"
-  resource_group_name = "${azurerm_resource_group.polkadot-{{ clusterName }}.name}"
+resource "azurerm_network_security_group" "polkadot-aks" {
+  name                = "polkadot-${var.cluster_name}"
+  location            = azurerm_resource_group.polkadot-aks.location
+  resource_group_name = azurerm_resource_group.polkadot-aks.name
 }
 
 resource "azurerm_network_security_rule" "outbound" {
@@ -69,8 +69,8 @@ resource "azurerm_network_security_rule" "outbound" {
   destination_port_range      = "*"
   source_address_prefix       = "*"
   destination_address_prefix  = "*"
-  resource_group_name         = "${azurerm_resource_group.polkadot-{{ clusterName }}.name}"
-  network_security_group_name = "${azurerm_network_security_group.polkadot-{{ clusterName }}.name}"
+  resource_group_name         = azurerm_resource_group.polkadot-aks.name
+  network_security_group_name = azurerm_network_security_group.polkadot-aks.name
 }
 
 resource "azurerm_network_security_rule" "p2p" {
@@ -83,11 +83,11 @@ resource "azurerm_network_security_rule" "p2p" {
   destination_port_range      = "30100-30101"
   source_address_prefix       = "*"
   destination_address_prefix  = "*"
-  resource_group_name         = "${azurerm_resource_group.polkadot-{{ clusterName }}.name}"
-  network_security_group_name = "${azurerm_network_security_group.polkadot-{{ clusterName }}.name}"
+  resource_group_name         = azurerm_resource_group.polkadot-aks.name
+  network_security_group_name = azurerm_network_security_group.polkadot-aks.name
 }
 
-resource "azurerm_subnet_network_security_group_association" "polkadot-{{ clusterName }}" {
-  subnet_id                 = "${azurerm_subnet.polkadot-{{ clusterName }}.id}"
-  network_security_group_id = "${azurerm_network_security_group.polkadot-{{ clusterName }}.id}"
+resource "azurerm_subnet_network_security_group_association" "polkadot-aks" {
+  subnet_id                 = azurerm_subnet.polkadot-aks.id
+  network_security_group_id = azurerm_network_security_group.polkadot-aks.id
 }
