@@ -14,7 +14,7 @@ import (
     "github.com/stretchr/testify/assert"
 )
 
-func TestTerraformGooglePolkadotDeployer(t *testing.T) {
+func TestTerraformAzurePolkadotDeployer(t *testing.T) {
     t.Parallel()
 
     terraformDir := "../"
