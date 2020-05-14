@@ -6,6 +6,7 @@ import (
     "strings"
     "testing"
 
+    "github.com/gruntwork-io/terratest/modules/azure"
     "github.com/gruntwork-io/terratest/modules/random"
     "github.com/gruntwork-io/terratest/modules/terraform"
     "github.com/gruntwork-io/terratest/modules/test-structure"
@@ -13,16 +14,20 @@ import (
 )
 
 func createTerraformOptions(t *testing.T, terraformDir string) {
-    nodeCount := 2
-    servicePort := 30100
-    uniqueID := strings.ToLower(random.UniqueId())
-    clusterName := fmt.Sprintf("test-polkadot-%s", uniqueID)
-
     clientId := os.Getenv("ARM_CLIENT_ID")
     require.NotEmpty(t, clientId, "ARM_CLIENT_ID variable is not set")
 
     clientSecret := os.Getenv("ARM_CLIENT_SECRET")
     require.NotEmpty(t, clientSecret, "ARM_CLIENT_SECRET variable is not set")
+
+    subscriptionID := os.Getenv("ARM_SUBSCRIPTION_ID")
+    require.NotEmpty(t, subscriptionID, "ARM_SUBSCRIPTION_ID variable is not set")
+
+    nodeCount := 2
+    servicePort := 30100
+    location := azure.GetRandomStableRegion(t, []string{"centralus", "eastus", "northeurope", "westeurope"}, nil, subscriptionID)
+    uniqueID := strings.ToLower(random.UniqueId())
+    clusterName := fmt.Sprintf("test-polkadot-%s", uniqueID)
 
     terraformOptions := &terraform.Options{
         TerraformDir: terraformDir,
@@ -30,7 +35,7 @@ func createTerraformOptions(t *testing.T, terraformDir string) {
             "client_id":     clientId,
             "client_secret": clientSecret,
             "cluster_name":  clusterName,
-            "location":      "northeurope",
+            "location":      location,
             "machine_type":  "Standard_B2s",
             "node_count":    nodeCount,
         },
